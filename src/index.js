@@ -32,18 +32,13 @@ function onSearch(evt){
             else {
                return renderMarkup(data.hits);
                 // Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
-            //     refs.loadMoreBtn.style.display = 'none';
-            //     lightbox.refresh();
-                // 
+
             }
         })
         .catch(function (error) {
             console.log('Error', error.message);
         });
     }
-
-
-
 
 
     if(searchValue ===''){
@@ -95,8 +90,8 @@ function renderMarkup(images) {
 
 
 //------------------------------------------------------------------------------
-function clearImages(){
-    page = 1;
-    refs.btnLoad.style.display = 'none';
-    // refs.gallery.innerHTML ='';
-};
+// function clearImages(){
+//     page = 1;
+//     refs.btnLoad.style.display = 'none';
+
+// };

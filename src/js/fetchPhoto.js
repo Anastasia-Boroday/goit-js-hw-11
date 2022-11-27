@@ -1,8 +1,8 @@
-export { fetchPhoto }
+export { fetchImages }
 import axios from "axios";
 
 
-async function fetchPhoto(searchName,page) {
+async function fetchImages(searchName,page) {
     const API_KEY = '31642962-139425cc99637104e380eec6c';
     const BASE_URL = 'https://pixabay.com/api/';
     axios.defaults.baseURL = `${BASE_URL}`;

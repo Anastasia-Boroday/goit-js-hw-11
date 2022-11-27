@@ -1,61 +1,78 @@
-import { fetchPhoto } from './js/fetchPhoto'
+import { fetchImages } from './js/fetchPhoto'
 import Notiflix from 'notiflix';
 
-const refs = {
-    form: document.querySelector('.search-form'),
-    input:document.querySelector('.search-form-inp'),
-    btnSearch: document.querySelector('.search-form-btn'),
-    btnLoad: document.querySelector('.load-btn'),
-    gallery: document.querySelector('gallery')
-}
 
-fetchPhoto("dog",1);
+const refs = {
+    searchForm: document.querySelector(".search-form"),
+    inputData: document.querySelector(".search-form-inp"),
+    searchBtn: document.querySelector(".search-form-btn"),
+    gallery: document.querySelector(".gallery"),
+    loadMoreBtn: document.querySelector(".load-btn"),
+};
+
+refs.loadMoreBtn.classList.add('load-btn-none');
 let page = 1;
 
-refs.form.addEventListener('submit', onSearch);
-
-
+refs.searchForm.addEventListener("submit", onSearch);
+refs.loadMoreBtn.addEventListener('click', onLoadMore);
 
 function onSearch(evt){
     evt.preventDefault();
     clearImages();
-    const searchValue = refs.input.value.trim();
+    const searchValue = refs.inputData.value.trim();
 
     if(searchValue){
-        fetchPhoto(searchValue, page)
+        fetchImages(searchValue, page)
         .then(data => {
-            if(data.hits.length === 0) {
+            if (data.hits.length === 0) {
+                refs.loadMoreBtn.style.display = 'none';
                 return Notiflix.Notify.warning(
                     'Sorry, there are no images matching your search query. Please try again.'
                 );
-            } 
+            }  if(data.hits.length >= 40) {
+                renderMarkup(data.hits);
+                Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+                refs.loadMoreBtn.style.display = 'block';
+            }
             else {
-               return renderMarkup(data.hits);
-                // Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
-
+                onLoadMore(data.hits);
+                refs.loadMoreBtn.style.display = 'none';
             }
         })
         .catch(function (error) {
             console.log('Error', error.message);
         });
     }
-
-
-    if(searchValue ===''){
+    if(searchValue === ''){
         Notiflix.Notify.failure('Oops, please enter data in the search field');
     }
 
 };
 
-// -----------------------------------------------------------------------------
-  
+function onLoadMore() {
+    refs.loadMoreBtn.classList.remove('load-btn-none');
+    page += 1;
+    const searchValue = refs.inputData.value.trim();
+
+    fetchImages(searchValue, page).then(data => {
+        renderMarkup(data.hits);
+        const totalPage = data.totalHits / 40;
+
+        if(totalPage <= page) {
+            refs,loadMoreBtn.style.display = 'none';
+            Notiflix.Notify.warning("We're sorry, but you've reached the end of search results."
+            )
+        }
+    })
+};
+
 function renderMarkup(images) {
-      const arraOfImg = images.map(({ webformatURL,largeImageURL,likes,views,comments,downloads}) =>
-        `<div class='photo-card'>
-    <a class='gallery__item' href={{largeImageURL}}>
+    const arraOfImg = images.map(({ webformatURL,largeImageURL,likes,views,comments,downloads}) =>
+`<div class='photo-card'>
+    <a class='gallery__item' href=${largeImageURL}>
       <img
         class='gallery__image'
-        src={{webformatURL}}
+        src=${webformatURL}
         alt={{tags}}
         loading='lazy'
       />
@@ -64,34 +81,29 @@ function renderMarkup(images) {
     <div class='info'>
       <p class='info-item'>
         <b>Likes</b>
-        {{likes}}
+        ${likes}
       </p>
       <p class='info-item'>
         <b>Views</b>
-        {{views}}
+        ${views}
       </p>
       <p class='info-item'>
         <b>Comments</b>
-        {{comments}}
+        ${comments}
       </p>
       <p class='info-item'>
         <b>Downloads</b>
-        {{downloads}}
+        ${downloads}
       </p>
     </div>
-  </div>` 
+  </div>`
         ).join("");
-    // refs.gallery.innerHTML = arraOfImg;   
-    
-    refs.gallery.insertAdjacentHTML('beforeend', arraOfImg);
 
+    refs.gallery.insertAdjacentHTML('beforeend', arraOfImg);
   }
 
-
-
-//------------------------------------------------------------------------------
-// function clearImages(){
-//     page = 1;
-//     refs.btnLoad.style.display = 'none';
-
-// };
+function clearImages(){
+    page = 1;
+    refs.loadMoreBtn.style.display = 'none';
+    refs.gallery.innerHTML = '';
+};
